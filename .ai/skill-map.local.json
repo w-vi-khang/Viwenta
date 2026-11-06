@@ -1,0 +1,5 @@
+{
+  "_comment": "Project-specific skills. Each skill = .claude/skills/local-<name>/SKILL.md. Create with skill-authoring --local.",
+  "version": 1,
+  "skills": []
+}

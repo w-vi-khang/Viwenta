@@ -1,0 +1,65 @@
+{
+  "_comment": "Per-project file. init_project.py does NOT overwrite this file if it already exists.",
+  "name": "Viwenta",
+  "stack": [
+    "unity 6000.4.8f1",
+    "c#",
+    "voxel game"
+  ],
+  "verify": {
+    "_comment": "Empty = the AI must ask the user how to verify. Each command must exit 0 on pass. A slow command / one that concerns only part of the repo: write it as {\"cmd\": \"...\", \"paths\": [\"tools/asset_check/\", \"*.blend\"]} -> the Stop hook demands it only when a changed file matches paths (a folder ends with /, or a glob).",
+    "test": {
+      "cmd": "/Applications/Unity/Hub/Editor/6000.4.8f1/Unity.app/Contents/MacOS/Unity -batchmode -nographics -projectPath \"$(pwd)\" -runTests -testPlatform EditMode -testResults .ai/.state/unity-test-results.xml -logFile .ai/.state/unity-test.log",
+      "paths": [
+        "Assets/_Project/Scripts/",
+        "Packages/manifest.json"
+      ]
+    },
+    "lint": "",
+    "typecheck": "",
+    "build": ""
+  },
+  "checklist": [
+    "Every new or changed C# script compiles with no errors in the Unity Console",
+    "Every changed scene or prefab opens with no missing-reference or missing-script warnings",
+    "Every new .cs, scene, prefab, texture or material has its .meta file committed",
+    "No file under Library/, Logs/, UserSettings/ or Temp/ is committed",
+    "New assets live under Assets/_Project/ in the matching subfolder"
+  ],
+  "_checklist": "Verification criteria that are NOT run as commands (for planning, ideas, documents... projects, or as a supplement to code). The AI checks each item and records pass/fail in '## Kiểm chứng'. Written in English (AGENTS.md §11.1). E.g.: \"Every work item has an owner and a deadline\".",
+  "format_on_edit": {
+    "_comment": "Command run after each AI file edit. {file} is replaced by the file path. Leave empty to disable.",
+    "command": ""
+  },
+  "protected_paths": [
+    ".env",
+    ".env.*",
+    "secrets/",
+    "*.pem",
+    "ProjectSettings/ProjectVersion.txt"
+  ],
+  "router": {
+    "_comment": "Tune skill suggestions for this project. ignore_keywords: keywords not used for suggestions (written without diacritics, e.g. \"skill\" if the game has character skills). disable_skills: names of skills that are never suggested (e.g. code skills when the project has no code yet).",
+    "ignore_keywords": [],
+    "disable_skills": []
+  },
+  "model_roles": {
+    "planner": [
+      "opus",
+      "fable"
+    ],
+    "executor": [
+      "sonnet",
+      "haiku"
+    ]
+  },
+  "_model_roles": "Role follows the running model (AGENTS.md §10): a model name containing a word from planner → Planner (design, write briefs, review); executor → Executor (follows briefs in .ai/briefs/).",
+  "child_sessions": {
+    "auto_chain": false
+  },
+  "_child_sessions": "Claude Code desktop (AGENTS.md §10.7). auto_chain = true: the review after exec finishes and the re-exec after 'changes needed' are handed to a child session right away, reusing a child session of the same level (clear + send the command). false: shows a proposal card for the user to click (each click opens a new session).",
+  "context_warn_tokens": 150000,
+  "context_handoff_tokens": 250000,
+  "context_window_tokens": 0,
+  "_context": "Context warnings by real tokens (read from the transcript). context_warn_tokens: long context, suggests /clear when switching tasks. context_handoff_tokens: above this threshold, finish the current step then handoff + /clear even on the same task (every turn re-reads the whole context, so long sessions cost a lot of usage; 0 = off). context_window_tokens: the model's context window (e.g. 200000 or 1000000; 0 = unknown) -> strong warning at >= 85% used, auto-compact is near."
+}

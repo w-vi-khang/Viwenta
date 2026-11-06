@@ -4,10 +4,18 @@
       "source": {
         "source": "git",
         "url": "git@github.com:w-vi-khang/ai-workflow-kit.git"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
     "ai-workflow-kit@ai-workflow-kit": true
+  },
+  "permissions": {
+    "allow": [
+      "mcp__ccd_session_mgmt__clear_session",
+      "SendMessage",
+      "mcp__ccd_session_mgmt__send_message"
+    ]
   }
 }

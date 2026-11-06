@@ -36,3 +36,5 @@
 sysinfo.txt
 crashlytics-build.properties
 .DS_Store
+.ai/.state/
+.claude/settings.local.json

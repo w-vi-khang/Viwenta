@@ -1,10 +1,10 @@
 # Brief 0001 — Block asset template (per-face skins, texture baker)
 
-> Status: awaiting review
+> Status: approved
 > Level: Large
 > Review: full
 > Executor model: Sonnet · medium
-> Updated: 2026-11-07 07:20
+> Updated: 2026-11-07 07:00
 
 ## Goal
 Make block art replaceable without touching data: a block references its face textures (Top / Side / Bottom) as asset files instead of a raw texture-array layer number, and an Editor baker packs those files into the block `Texture2DArray`. All art stays placeholder; this brief is logic and tooling only (no shader, no material, no art files).
@@ -244,3 +244,13 @@ Commit: 30714c5 (branch init/unity-project, not pushed). Changed: Core/BlockDefi
 ---
 
 ## Review
+Level full, reviewed by Opus · medium on commit 30714c5.
+- Run with `Sonnet · medium` matches Executor model.
+- Every row of "Parts to test" has a result; 113/113 pass (97 + 16), 0 `error CS` per Test results; no re-run needed.
+- Diff read: Core (`SkinFor`, chained 1-skin ctor, `Skin` removed), builder line 56, `BlockDefinitionAsset` (slots, Top fallback reuses the whole slot, exact error messages), `BlockRegistryAsset`, `BlockTextureLibrary`, baker (validation before allocation, expected mips, sort order, sub-asset replace, per-registry error logging), import rules. Matches Settled decisions and Scope; `FixedChunkDemo.cs` and existing tests untouched.
+- `Docs/Design/AssetTemplates.md` is byte-identical to the brief block; `Rendering.md` changed on line 36 only.
+- MINOR (not blocking): `BlockTextureBaker.Bake` removes the previous array sub-asset with `RemoveObjectFromAsset` but does not destroy it, so the old array lingers in memory until domain reload. Fix with `Object.DestroyImmediate` after removal when next touching the baker.
+- NOTE: no check against the texture array depth limit or the `ushort` layer range; irrelevant at placeholder scale, revisit when real art lands.
+- NOTE: public methods of `BlockTextureBaker` have no `<summary>`; style only.
+- Verdict: approved
+

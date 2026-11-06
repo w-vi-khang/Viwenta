@@ -1,10 +1,10 @@
 # Brief 0001 — Block asset template (per-face skins, texture baker)
 
-> Status: todo
+> Status: awaiting review
 > Level: Large
 > Review: full
 > Executor model: Sonnet · medium
-> Updated: 2026-11-07 01:30
+> Updated: 2026-11-07 07:20
 
 ## Goal
 Make block art replaceable without touching data: a block references its face textures (Top / Side / Bottom) as asset files instead of a raw texture-array layer number, and an Editor baker packs those files into the block `Texture2DArray`. All art stays placeholder; this brief is logic and tooling only (no shader, no material, no art files).
@@ -228,8 +228,16 @@ None (no art, scene or shader in this brief; visual checks come with the shader 
 ---
 
 ## Result
+Base commit: 8e15358
+Run with: Sonnet · medium
+Commit: 30714c5 (branch init/unity-project, not pushed). Changed: Core/BlockDefinition.cs, Core/ChunkMeshBuilder.cs, Runtime/BlockDefinitionAsset.cs, Runtime/BlockRegistryAsset.cs, new Runtime/BlockTextureLibrary.cs, new Editor/ (asmdef, BlockTextureBaker.cs, BlockTextureImportRules.cs), Tests asmdef (+1 reference), new BlockSkinTests.cs and BlockTextureBakerTests.cs, new Docs/Design/AssetTemplates.md, Rendering.md line 36; plus .meta files.
 
 ## Test results
+- Commands: (1) `grep -rn "\.Skin\b\|textureLayer" Assets/_Project/Scripts` -> no output. (2) `verify_run --all` -> exit 0. (3) results XML `total="113" passed="113" failed="0"` (97 + 16 new); `grep -c 'error CS'` log -> 0. (4) git status showed only scope files + .meta before commit.
+- All 16 new tests Passed: SkinFor_MapsUpToTopDownToBottomAndOthersToSide, SingleSkinConstructor_UsesSkinOnEveryFace, Build_GrassLikeBlock_UsesTopSideAndBottomLayers, ToDefinition_ResolvesLayersFromLibraryAndFallsBackToTop, ToDefinition_NoTopTexture_ThrowsWithBlockName, ToDefinition_TextureNotBaked_ThrowsWithSlotAndTextureName, ToDefinition_NullLibrary_Throws, RegistryBuild_NoLibrary_ThrowsWithRegistryName, BuildArray_CopiesEveryLayerAndMip, BuildArray_WrongSize/Empty/NullEntry/FaceSizeNotPowerOfTwo/NoMipmaps, CollectSources_RemovesDuplicatesAndOrdersByName, ImportRules_AppliesOnlyUnderBlocksFolder.
+- Regression: all 97 existing tests Passed unchanged. Compile incl. Editor asmdef: pass (0 `error CS`).
+- Note: the Unity log printed ".state is not a valid directory name" twice (harmless; exit 0). `Bake`/`BakeAll` (write assets) are not unit-tested, per brief.
+- User tests: none.
 
 ## Blockers
 

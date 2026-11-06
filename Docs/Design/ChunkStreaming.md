@@ -1,6 +1,6 @@
 # Chunk Streaming — Design
 
-Status: design only, no code yet. Items marked **[open]** are undecided. Items marked **[unverified]** were not checked against docs or a run.
+Status: design; steps 1-2 of section 10 are built. GPU-side decisions live in `Rendering.md`. Items marked **[open]** are undecided. Items marked **[unverified]** were not checked against docs or a run.
 
 ## 1. Constants service (`VoxelConstants`)
 

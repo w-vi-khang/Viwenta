@@ -1,0 +1,16 @@
+{
+    "name": "Viwenta.Voxel.Runtime",
+    "rootNamespace": "Viwenta.Voxel",
+    "references": [
+        "Viwenta.Voxel.Core"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -4,7 +4,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Viwenta.Voxel.Core"
+        "Viwenta.Voxel.Core",
+        "Viwenta.Voxel.Runtime"
     ],
     "includePlatforms": [
         "Editor"

@@ -112,6 +112,57 @@ namespace Viwenta.Voxel.Tests
         }
 
         [Test]
+        public void Build_TransparentBlock_GoesToTransparentIndices()
+        {
+            var chunk = new ChunkData();
+            chunk.SetBlock(5, 5, 5, Stone);
+            chunk.SetBlock(6, 5, 5, Glass);
+
+            ChunkMeshData mesh = Build(new ChunkNeighborhood(chunk));
+
+            Assert.AreEqual(6 * 6, mesh.Indices.Count);
+            Assert.AreEqual(5 * 6, mesh.TransparentIndices.Count);
+            Assert.AreEqual(11 * 2, mesh.TriangleCount);
+            foreach (int index in mesh.TransparentIndices)
+                Assert.GreaterOrEqual(index, 6 * 4, "transparent triangles must use glass vertices only");
+        }
+
+        [Test]
+        public void Build_OnlyOpaqueBlocks_LeavesTransparentIndicesEmpty()
+        {
+            ChunkMeshData mesh = Build(Single(5, 5, 5));
+
+            Assert.AreEqual(36, mesh.Indices.Count);
+            Assert.AreEqual(0, mesh.TransparentIndices.Count);
+        }
+
+        [Test]
+        public void AppendFace_Transparent_KeepsWindingOutward()
+        {
+            var mesh = new ChunkMeshData();
+            ChunkMeshBuilder.AppendFace(mesh, FaceShape.Flat, 4, Direction.PosX, 0, 0, 0, BlockSkin.Default, transparent: true);
+
+            Assert.AreEqual(0, mesh.Indices.Count);
+            Assert.AreEqual(6, mesh.TransparentIndices.Count);
+            mesh.Indices.AddRange(mesh.TransparentIndices);
+            AssertWindingMatchesNormals(mesh, "transparent");
+        }
+
+        [Test]
+        public void Clear_EmptiesBothIndexLists()
+        {
+            var chunk = new ChunkData();
+            chunk.SetBlock(5, 5, 5, Stone);
+            chunk.SetBlock(6, 5, 5, Glass);
+            ChunkMeshData mesh = Build(new ChunkNeighborhood(chunk));
+
+            mesh.Clear();
+
+            Assert.AreEqual(0, mesh.VertexCount);
+            Assert.AreEqual(0, mesh.TriangleCount);
+        }
+
+        [Test]
         public void Build_UnregisteredBlock_ThrowsWithTheId()
         {
             var chunk = new ChunkData();

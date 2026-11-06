@@ -9,10 +9,15 @@ namespace Viwenta.Voxel
     /// The vertex is packed to 24 bytes: position and uv as half floats, normal as signed bytes, tint as bytes.
     /// Unity requires attributes in the order position, normal, colour, uv; the struct and layout below follow it.
     /// Chunk-local positions stay within 0..16, where a half float resolves 1/64 or finer.
+    /// Every non-empty mesh has two submeshes sharing one index buffer: <see cref="OpaqueSubMesh"/> then
+    /// <see cref="TransparentSubMesh"/> (possibly empty), so every chunk takes the same two materials.
     /// </summary>
     public static class ChunkMeshConverter
     {
         public const int VertexStrideBytes = 24;
+
+        public const int OpaqueSubMesh = 0;
+        public const int TransparentSubMesh = 1;
 
         /// <summary>Largest vertex count that still fits 16-bit indices.</summary>
         public const int MaxVerticesFor16BitIndices = ushort.MaxValue + 1;
@@ -38,7 +43,7 @@ namespace Viwenta.Voxel
 
         /// <summary>
         /// Fills <paramref name="mesh"/> from <paramref name="data"/>; the mesh is cleared first.
-        /// Uses 16-bit indices when the vertex count allows it, 32-bit otherwise.
+        /// Uses 16-bit indices when the vertex count allows it, 32-bit otherwise. An empty mesh gets no submeshes.
         /// </summary>
         public static void Apply(ChunkMeshData data, Mesh mesh)
         {
@@ -69,24 +74,32 @@ namespace Viwenta.Voxel
                 };
             }
 
-            int indexCount = data.Indices.Count;
+            int opaqueCount = data.Indices.Count;
+            int indexCount = opaqueCount + data.TransparentIndices.Count;
             bool wide = !Fits16BitIndices(vertexCount);
             mesh.SetVertexBufferParams(vertexCount, Layout);
             mesh.SetVertexBufferData(vertices, 0, 0, vertexCount);
             if (wide)
             {
+                var all = new int[indexCount];
+                data.Indices.CopyTo(all, 0);
+                data.TransparentIndices.CopyTo(all, opaqueCount);
                 mesh.SetIndexBufferParams(indexCount, IndexFormat.UInt32);
-                mesh.SetIndexBufferData(data.Indices.ToArray(), 0, 0, indexCount);
+                mesh.SetIndexBufferData(all, 0, 0, indexCount);
             }
             else
             {
                 var narrow = new ushort[indexCount];
-                for (int i = 0; i < indexCount; i++)
+                for (int i = 0; i < opaqueCount; i++)
                     narrow[i] = (ushort)data.Indices[i];
+                for (int i = opaqueCount; i < indexCount; i++)
+                    narrow[i] = (ushort)data.TransparentIndices[i - opaqueCount];
                 mesh.SetIndexBufferParams(indexCount, IndexFormat.UInt16);
                 mesh.SetIndexBufferData(narrow, 0, 0, indexCount);
             }
-            mesh.SetSubMesh(0, new SubMeshDescriptor(0, indexCount));
+            mesh.subMeshCount = 2;
+            mesh.SetSubMesh(OpaqueSubMesh, new SubMeshDescriptor(0, opaqueCount));
+            mesh.SetSubMesh(TransparentSubMesh, new SubMeshDescriptor(opaqueCount, indexCount - opaqueCount));
             mesh.RecalculateBounds();
         }
 

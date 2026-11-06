@@ -91,6 +91,59 @@ namespace Viwenta.Voxel.Tests
             Object.DestroyImmediate(mesh);
         }
 
+        static ChunkMeshData StoneAndGlassMesh()
+        {
+            var registry = new BlockRegistry();
+            registry.Register(new BlockDefinition(1, "stone", true, BlockSkin.Default));
+            registry.Register(new BlockDefinition(2, "glass", false, BlockSkin.Default));
+            var chunk = new ChunkData();
+            chunk.SetBlock(5, 5, 5, 1);
+            chunk.SetBlock(6, 5, 5, 2);
+            var data = new ChunkMeshData();
+            ChunkMeshBuilder.Build(new ChunkNeighborhood(chunk), registry, new FaceShapeLibrary(), 0, data);
+            return data;
+        }
+
+        [Test]
+        public void Apply_TransparentBlocks_GoToSecondSubMeshAfterOpaque()
+        {
+            ChunkMeshData data = StoneAndGlassMesh();
+            var mesh = new Mesh();
+
+            ChunkMeshConverter.Apply(data, mesh);
+
+            Assert.AreEqual(2, mesh.subMeshCount);
+            Assert.AreEqual(0u, mesh.GetIndexStart(ChunkMeshConverter.OpaqueSubMesh));
+            Assert.AreEqual(36u, mesh.GetIndexCount(ChunkMeshConverter.OpaqueSubMesh));
+            Assert.AreEqual(36u, mesh.GetIndexStart(ChunkMeshConverter.TransparentSubMesh));
+            Assert.AreEqual(30u, mesh.GetIndexCount(ChunkMeshConverter.TransparentSubMesh));
+            CollectionAssert.AreEqual(data.Indices, mesh.GetIndices(ChunkMeshConverter.OpaqueSubMesh));
+            CollectionAssert.AreEqual(data.TransparentIndices, mesh.GetIndices(ChunkMeshConverter.TransparentSubMesh));
+            Object.DestroyImmediate(mesh);
+        }
+
+        [Test]
+        public void Apply_OnlyOpaqueBlocks_KeepsEmptyTransparentSubMesh()
+        {
+            var mesh = new Mesh();
+
+            ChunkMeshConverter.Apply(SingleBlockMesh(), mesh);
+
+            Assert.AreEqual(2, mesh.subMeshCount);
+            Assert.AreEqual(0u, mesh.GetIndexCount(ChunkMeshConverter.TransparentSubMesh));
+            Object.DestroyImmediate(mesh);
+        }
+
+        [Test]
+        public void Apply_NullArguments_Throw()
+        {
+            var mesh = new Mesh();
+
+            Assert.Throws<System.ArgumentNullException>(() => ChunkMeshConverter.Apply(null, mesh));
+            Assert.Throws<System.ArgumentNullException>(() => ChunkMeshConverter.Apply(new ChunkMeshData(), null));
+            Object.DestroyImmediate(mesh);
+        }
+
         [Test]
         public void Apply_EmptyData_LeavesEmptyMesh()
         {
@@ -122,6 +175,22 @@ namespace Viwenta.Voxel.Tests
 
             Assert.AreEqual(IndexFormat.UInt32, mesh.indexFormat);
             Assert.AreEqual((uint)data.Indices.Count, mesh.GetIndexCount(0));
+            Object.DestroyImmediate(mesh);
+        }
+
+        [Test]
+        public void Apply_MoreThan65536VerticesWithTransparentFaces_Splits32BitSubMeshes()
+        {
+            var data = new ChunkMeshData();
+            for (int i = 0; i < 17000; i++)
+                ChunkMeshBuilder.AppendFace(data, FaceShape.Flat, 0, Direction.PosY, i & 15, 0, 0, BlockSkin.Default, transparent: i >= 16990);
+            var mesh = new Mesh();
+
+            ChunkMeshConverter.Apply(data, mesh);
+
+            Assert.AreEqual(IndexFormat.UInt32, mesh.indexFormat);
+            Assert.AreEqual(60u, mesh.GetIndexCount(ChunkMeshConverter.TransparentSubMesh));
+            CollectionAssert.AreEqual(data.TransparentIndices, mesh.GetIndices(ChunkMeshConverter.TransparentSubMesh));
             Object.DestroyImmediate(mesh);
         }
 

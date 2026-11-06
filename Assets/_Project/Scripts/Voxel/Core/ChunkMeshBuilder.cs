@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Viwenta.Voxel
 {
@@ -52,7 +53,7 @@ namespace Viwenta.Voxel
                                 byte key = FaceVariantKey.Compute(blocks, x, y, z, direction);
                                 shape = library.Resolve(key, tier, out symmetry);
                             }
-                            AppendFace(output, shape, symmetry, direction, x, y, z, block.Skin);
+                            AppendFace(output, shape, symmetry, direction, x, y, z, block.Skin, !block.IsOpaque);
                         }
                     }
                 }
@@ -64,8 +65,11 @@ namespace Viwenta.Voxel
         /// <paramref name="direction"/>, after applying <paramref name="symmetry"/> (mirror first, then rotation).
         /// Uvs come from the shape, or from the transformed (u, w) when the shape has none; the third component is the skin layer.
         /// A mirror reverses triangle order so faces keep facing outward.
+        /// Triangles go to <see cref="ChunkMeshData.TransparentIndices"/> when <paramref name="transparent"/>, else to
+        /// <see cref="ChunkMeshData.Indices"/>.
         /// </summary>
-        public static void AppendFace(ChunkMeshData mesh, FaceShape shape, int symmetry, Direction direction, int vx, int vy, int vz, in BlockSkin skin)
+        public static void AppendFace(ChunkMeshData mesh, FaceShape shape, int symmetry, Direction direction, int vx, int vy, int vz, in BlockSkin skin,
+            bool transparent = false)
         {
             FaceFrame f = FaceFrame.Get(direction);
             bool mirror = (symmetry & 4) != 0;
@@ -113,11 +117,12 @@ namespace Viwenta.Voxel
                 mesh.Colors.Add(skin.Tint);
             }
 
+            List<int> indices = transparent ? mesh.TransparentIndices : mesh.Indices;
             for (int i = 0; i < shape.Indices.Length; i += 3)
             {
-                mesh.Indices.Add(baseVertex + shape.Indices[i]);
-                mesh.Indices.Add(baseVertex + shape.Indices[mirror ? i + 2 : i + 1]);
-                mesh.Indices.Add(baseVertex + shape.Indices[mirror ? i + 1 : i + 2]);
+                indices.Add(baseVertex + shape.Indices[i]);
+                indices.Add(baseVertex + shape.Indices[mirror ? i + 2 : i + 1]);
+                indices.Add(baseVertex + shape.Indices[mirror ? i + 1 : i + 2]);
             }
         }
     }

@@ -53,7 +53,7 @@ namespace Viwenta.Voxel
                                 byte key = FaceVariantKey.Compute(blocks, x, y, z, direction);
                                 shape = library.Resolve(key, tier, out symmetry);
                             }
-                            AppendFace(output, shape, symmetry, direction, x, y, z, block.Skin, !block.IsOpaque);
+                            AppendFace(output, shape, symmetry, direction, x, y, z, block.SkinFor(direction), !block.IsOpaque);
                         }
                     }
                 }

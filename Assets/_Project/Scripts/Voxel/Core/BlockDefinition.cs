@@ -34,20 +34,46 @@ namespace Viwenta.Voxel
         /// <summary>An opaque block hides the faces of its neighbours.</summary>
         public bool IsOpaque { get; }
 
-        public BlockSkin Skin { get; }
+        /// <summary>Skin of the face looking up (+Y).</summary>
+        public BlockSkin Top { get; }
+
+        /// <summary>Skin of the four side faces.</summary>
+        public BlockSkin Side { get; }
+
+        /// <summary>Skin of the face looking down (-Y).</summary>
+        public BlockSkin Bottom { get; }
 
         /// <summary>When set, every exposed face of this block uses this shape instead of the shared variant library.</summary>
         public FaceShape FaceShapeOverride { get; }
 
+        /// <summary>Uses <paramref name="skin"/> on every face.</summary>
         public BlockDefinition(ushort id, string name, bool isOpaque, BlockSkin skin, FaceShape faceShapeOverride = null)
+            : this(id, name, isOpaque, skin, skin, skin, faceShapeOverride)
+        {
+        }
+
+        public BlockDefinition(ushort id, string name, bool isOpaque, BlockSkin top, BlockSkin side, BlockSkin bottom, FaceShape faceShapeOverride = null)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Block name must not be empty.", nameof(name));
             Id = id;
             Name = name;
             IsOpaque = isOpaque;
-            Skin = skin;
+            Top = top;
+            Side = side;
+            Bottom = bottom;
             FaceShapeOverride = faceShapeOverride;
+        }
+
+        /// <summary>Skin of the face looking along <paramref name="direction"/>.</summary>
+        public BlockSkin SkinFor(Direction direction)
+        {
+            switch (direction)
+            {
+                case Direction.PosY: return Top;
+                case Direction.NegY: return Bottom;
+                default: return Side;
+            }
         }
     }
 }

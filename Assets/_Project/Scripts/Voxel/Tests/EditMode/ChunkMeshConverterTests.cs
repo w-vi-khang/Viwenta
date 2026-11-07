@@ -123,6 +123,21 @@ namespace Viwenta.Voxel.Tests
         }
 
         [Test]
+        public void Apply_HalfPositions_SetsBoundsFromVertexData()
+        {
+            var mesh = new Mesh();
+
+            ChunkMeshConverter.Apply(SingleBlockMesh(), mesh);
+
+            // Block at (5,5,5) spans 5..6 on every axis. Half-float positions make
+            // RecalculateBounds fail, so bounds must come from the source data.
+            Assert.AreEqual(new Vector3(5.5f, 5.5f, 5.5f), mesh.bounds.center);
+            Assert.AreEqual(new Vector3(0.5f, 0.5f, 0.5f), mesh.bounds.extents);
+            Assert.AreEqual(mesh.bounds, mesh.GetSubMesh(ChunkMeshConverter.OpaqueSubMesh).bounds);
+            Object.DestroyImmediate(mesh);
+        }
+
+        [Test]
         public void Apply_OnlyOpaqueBlocks_KeepsEmptyTransparentSubMesh()
         {
             var mesh = new Mesh();

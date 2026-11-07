@@ -97,10 +97,31 @@ namespace Viwenta.Voxel
                 mesh.SetIndexBufferParams(indexCount, IndexFormat.UInt16);
                 mesh.SetIndexBufferData(narrow, 0, 0, indexCount);
             }
-            mesh.subMeshCount = 2;
-            mesh.SetSubMesh(OpaqueSubMesh, new SubMeshDescriptor(0, opaqueCount));
-            mesh.SetSubMesh(TransparentSubMesh, new SubMeshDescriptor(opaqueCount, indexCount - opaqueCount));
-            mesh.RecalculateBounds();
+            // Unity cannot recalculate bounds from Float16 positions, so bounds come from the source data
+            // and every submesh call skips the recalculation.
+            Bounds bounds = ComputeBounds(data.Positions, vertexCount);
+            const MeshUpdateFlags NoRecalc = MeshUpdateFlags.DontRecalculateBounds;
+            mesh.SetSubMeshes(new[]
+            {
+                new SubMeshDescriptor(0, opaqueCount) { bounds = bounds },
+                new SubMeshDescriptor(opaqueCount, indexCount - opaqueCount) { bounds = bounds },
+            }, NoRecalc);
+            mesh.bounds = bounds;
+        }
+
+        static Bounds ComputeBounds(System.Collections.Generic.List<float> positions, int vertexCount)
+        {
+            var min = new Vector3(positions[0], positions[1], positions[2]);
+            Vector3 max = min;
+            for (int i = 1; i < vertexCount; i++)
+            {
+                var p = new Vector3(positions[3 * i], positions[3 * i + 1], positions[3 * i + 2]);
+                min = Vector3.Min(min, p);
+                max = Vector3.Max(max, p);
+            }
+            var bounds = new Bounds();
+            bounds.SetMinMax(min, max);
+            return bounds;
         }
 
         static sbyte ToSNorm8(float value) => (sbyte)Mathf.RoundToInt(Mathf.Clamp(value, -1f, 1f) * 127f);

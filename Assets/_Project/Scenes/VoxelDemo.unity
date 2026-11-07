@@ -339,7 +339,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba7e95fc8c80043ad84493146eb03087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Viwenta.Voxel.Runtime::Viwenta.Voxel.FixedChunkDemo
-  registryAsset: {fileID: 0}
+  registryAsset: {fileID: 11400000, guid: 8483755a18ad741f882ed6375a7004cd, type: 2}
   surfaceBlockId: 3
   fillBlockId: 2
   glassBlockId: 4

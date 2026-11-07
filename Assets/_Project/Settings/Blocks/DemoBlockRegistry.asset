@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fade7d8cde644264ada6523649bfee8, type: 3}
+  m_Name: DemoBlockRegistry
+  m_EditorClassIdentifier: Viwenta.Voxel.Runtime::Viwenta.Voxel.BlockRegistryAsset
+  blocks:
+  - {fileID: 11400000, guid: d9289383d5f6f44379a15292119cad1e, type: 2}
+  - {fileID: 11400000, guid: 15df0421ba44346239de3ad80def8ce9, type: 2}
+  - {fileID: 11400000, guid: 1a6cc023f985940519006053f2308412, type: 2}
+  - {fileID: 11400000, guid: d31846bec00ef458c9629112b9b6c3cf, type: 2}
+  textures: {fileID: 11400000, guid: 75d36df5aa55544728242df32fff0942, type: 2}

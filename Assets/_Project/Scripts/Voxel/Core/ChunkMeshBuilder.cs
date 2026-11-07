@@ -63,7 +63,7 @@ namespace Viwenta.Voxel
         /// <summary>
         /// Copies <paramref name="shape"/> into <paramref name="mesh"/> on the face of voxel (vx, vy, vz) that looks along
         /// <paramref name="direction"/>, after applying <paramref name="symmetry"/> (mirror first, then rotation).
-        /// Uvs come from the shape, or from the transformed (u, w) when the shape has none; the third component is the skin layer.
+        /// Uvs come from the shape, or else from the vertex position on the face so that texture up is world up on side faces; the third component is the skin layer.
         /// A mirror reverses triangle order so faces keep facing outward.
         /// Triangles go to <see cref="ChunkMeshData.TransparentIndices"/> when <paramref name="transparent"/>, else to
         /// <see cref="ChunkMeshData.Indices"/>.
@@ -108,8 +108,28 @@ namespace Viwenta.Voxel
                 mesh.Normals.Add(nu * f.UY + nw * f.WY + nh * f.NY);
                 mesh.Normals.Add(nu * f.UZ + nw * f.WZ + nh * f.NZ);
 
-                float tu = shape.Uvs != null ? shape.Uvs[2 * i] : u;
-                float tv = shape.Uvs != null ? shape.Uvs[2 * i + 1] : w;
+                float tu, tv;
+                if (shape.Uvs != null)
+                {
+                    tu = shape.Uvs[2 * i];
+                    tv = shape.Uvs[2 * i + 1];
+                }
+                else
+                {
+                    int last = mesh.Positions.Count - 3;
+                    float px = mesh.Positions[last] - vx;
+                    float py = mesh.Positions[last + 1] - vy;
+                    float pz = mesh.Positions[last + 2] - vz;
+                    switch (direction)
+                    {
+                        case Direction.PosX: tu = pz; tv = py; break;
+                        case Direction.NegX: tu = 1f - pz; tv = py; break;
+                        case Direction.PosZ: tu = 1f - px; tv = py; break;
+                        case Direction.NegZ: tu = px; tv = py; break;
+                        case Direction.PosY: tu = px; tv = pz; break;
+                        default: tu = px; tv = 1f - pz; break;
+                    }
+                }
                 mesh.Uvs.Add(tu);
                 mesh.Uvs.Add(tv);
                 mesh.Uvs.Add(skin.Layer);

@@ -80,7 +80,7 @@ Keep flat faces and fake the rounding with normals or a normal map: silhouettes 
 
 - Tier thresholds, hysteresis, mobile cap.
 - Per-chunk or per-column mesh unit; draw-call budget on a real device.
-- Shader for the packed vertex and texture array (none exists yet).
+- Shader `Viwenta/VoxelChunk` exists (main light, SH ambient, shadows, fog); a cheaper variant for far tiers is still open.
 - Instancing API and LOD for objects; object and entity counts.
 - In-place face patching versus chunk rebuild.
 - Normal-map bevel for mobile.

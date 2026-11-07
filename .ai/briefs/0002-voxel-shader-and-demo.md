@@ -1,10 +1,10 @@
 # Brief 0002 — URP voxel shader, placeholder blocks and demo scene
 
-> Status: awaiting review
+> Status: approved
 > Level: Large
 > Review: full + user check
 > Executor model: Sonnet · high
-> Updated: 2026-11-07 08:30
+> Updated: 2026-11-07 12:45
 
 ## Goal
 Make a voxel chunk visible in the Editor: a URP shader that reads the packed chunk vertex and the block `Texture2DArray`, an opaque and a transparent material (submesh 0 and 1), placeholder block textures made to the template of `Docs/Design/AssetTemplates.md`, and a `VoxelDemo` scene showing `FixedChunkDemo` with grass, dirt, stone and glass. Art is placeholder; the structure (template, baker, two materials) is what matters.
@@ -189,3 +189,12 @@ Deviations: (1) `Viwenta.Voxel.Editor` is not auto-referenced, so the temporary 
 ---
 
 ## Review
+Level full + user check, reviewed by Opus · medium on commit f3595bb.
+- Run with `Sonnet · high` matches Executor model.
+- Every row of "Parts to test" has a result; 120/120 pass at f3595bb per Test results. Re-run through the Unity MCP in the open Editor after the fixes below: 122/122 EditMode pass, 0 errors in the Console.
+- Diff read: shader, materials, placeholder assets, `FixedChunkDemo.cs`, `ChunkMeshBuilder.cs` face uv switch, `Rendering.md:83`, new tests. Matches Settled decisions and Scope. Deviations (1)-(3) are acceptable: temp asmdef removed with the temp folder, case-insensitive LightMode compare is correct, the deleted `SceneTemplateSettings.json` was never tracked.
+- MAJOR (missed by the executor, fixed by the Planner in 400a21f): `VoxelDemo.unity` had `FixedChunkDemo.registryAsset: {fileID: 0}`, so the demo chunk never built. No test covered the scene wiring. Fixed by pointing it at `DemoBlockRegistry` and adding `DemoScene_FixedChunkHasRegistryAndTwoMaterials`.
+- MAJOR (pre-existing since 95b5551, surfaced by this demo, fixed in 7e132f1): `ChunkMeshConverter.Apply` stores Float16 positions, which `RecalculateBounds` cannot read, so every chunk had zero bounds at its origin and was frustum- and shadow-culled when that point left the view (Console: "Can't recalculate bounds ... Float3 position format"). Bounds are now computed from `ChunkMeshData.Positions`; regression test `Apply_HalfPositions_SetsBoundsFromVertexData` (failed before, passes after).
+- User check (2026-11-07, after both fixes): grass top, green band on all four side faces, see-through glass without shadow, hill shadows, no Console errors: all confirmed by the user.
+- Not run: `verify_run --all` in batchmode, because the Editor had the project open; MCP results above stand in for it.
+- Verdict: approved
